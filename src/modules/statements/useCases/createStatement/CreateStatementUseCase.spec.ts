@@ -1,5 +1,4 @@
 import { InMemoryUsersRepository } from "../../../users/repositories/in-memory/InMemoryUsersRepository";
-import { CreateUserUseCase } from "../../../users/useCases/createUser/CreateUserUseCase";
 import { ICreateUserDTO } from "../../../users/useCases/createUser/ICreateUserDTO";
 import { InMemoryStatementsRepository } from "../../repositories/in-memory/InMemoryStatementsRepository";
 import { CreateStatementError } from "./CreateStatementError";
@@ -9,7 +8,6 @@ import { OperationType } from "./OperationTypeEnum";
 let createStatementUseCase: CreateStatementUseCase;
 let inMemoryStatementsRepository: InMemoryStatementsRepository;
 let inMemoryUsersRepository: InMemoryUsersRepository;
-let createUserUseCase: CreateUserUseCase;
 
 describe("Create a deposit statement", () => {
   beforeEach(() => {
@@ -19,7 +17,6 @@ describe("Create a deposit statement", () => {
       inMemoryUsersRepository,
       inMemoryStatementsRepository
     );
-    createUserUseCase = new CreateUserUseCase(inMemoryUsersRepository);
   });
 
   it("should be able to make a deposit", async () => {
@@ -29,12 +26,10 @@ describe("Create a deposit statement", () => {
       password: "test",
     };
 
-    await createUserUseCase.execute(userData);
-
-    const user = await inMemoryUsersRepository.findByEmail(userData.email);
+    const user = await inMemoryUsersRepository.create(userData);
 
     const response = await createStatementUseCase.execute({
-      user_id: user?.id!,
+      user_id: user.id as string,
       type: OperationType.DEPOSIT,
       amount: 100,
       description: "Test deposit",
@@ -69,7 +64,6 @@ describe("Create a withdraw statement", () => {
       inMemoryUsersRepository,
       inMemoryStatementsRepository
     );
-    createUserUseCase = new CreateUserUseCase(inMemoryUsersRepository);
   });
 
   it("should be able to make a withdraw", async () => {
@@ -79,18 +73,17 @@ describe("Create a withdraw statement", () => {
       password: "test",
     };
 
-    await createUserUseCase.execute(userData);
-    const user = await inMemoryUsersRepository.findByEmail(userData.email);
+    const user = await inMemoryUsersRepository.create(userData);
 
     await inMemoryStatementsRepository.create({
-      user_id: user?.id!,
+      user_id: user.id as string,
       description: "test deposit",
       amount: 100,
       type: OperationType.DEPOSIT,
     });
 
     const response = await createStatementUseCase.execute({
-      user_id: user?.id!,
+      user_id: user.id as string,
       type: OperationType.WITHDRAW,
       amount: 100,
       description: "Test withdraw",
@@ -112,11 +105,10 @@ describe("Create a withdraw statement", () => {
       password: "test",
     };
 
-    await createUserUseCase.execute(userData);
-    const user = await inMemoryUsersRepository.findByEmail(userData.email);
+    const user = await inMemoryUsersRepository.create(userData);
 
     await inMemoryStatementsRepository.create({
-      user_id: user?.id!,
+      user_id: user.id as string,
       description: "test deposit",
       amount: 100,
       type: OperationType.DEPOSIT,
@@ -124,7 +116,7 @@ describe("Create a withdraw statement", () => {
 
     expect(async () => {
       await createStatementUseCase.execute({
-        user_id: user?.id!,
+        user_id: user.id as string,
         type: OperationType.WITHDRAW,
         amount: 200,
         description: "Test withdraw",

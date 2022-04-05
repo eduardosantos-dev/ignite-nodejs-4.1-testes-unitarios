@@ -1,5 +1,4 @@
 import { InMemoryUsersRepository } from "../../../users/repositories/in-memory/InMemoryUsersRepository";
-import { CreateUserUseCase } from "../../../users/useCases/createUser/CreateUserUseCase";
 import { ICreateUserDTO } from "../../../users/useCases/createUser/ICreateUserDTO";
 import { InMemoryStatementsRepository } from "../../repositories/in-memory/InMemoryStatementsRepository";
 import { OperationType } from "../createStatement/OperationTypeEnum";
@@ -9,7 +8,6 @@ import { GetStatementOperationUseCase } from "./GetStatementOperationUseCase";
 let getStatementOperationUseCase: GetStatementOperationUseCase;
 let inMemoryStatementsRepository: InMemoryStatementsRepository;
 let inMemoryUsersRepository: InMemoryUsersRepository;
-let createUserUseCase: CreateUserUseCase;
 
 describe("Get Statement Operation", () => {
   beforeEach(() => {
@@ -19,7 +17,6 @@ describe("Get Statement Operation", () => {
       inMemoryUsersRepository,
       inMemoryStatementsRepository
     );
-    createUserUseCase = new CreateUserUseCase(inMemoryUsersRepository);
   });
 
   it("should be able to get a statement operation", async () => {
@@ -29,20 +26,18 @@ describe("Get Statement Operation", () => {
       password: "test",
     };
 
-    await createUserUseCase.execute(userData);
-
-    const user = await inMemoryUsersRepository.findByEmail(userData.email);
+    const user = await inMemoryUsersRepository.create(userData);
 
     const statement = await inMemoryStatementsRepository.create({
-      user_id: user?.id!,
+      user_id: user.id as string,
       description: "test deposit",
       amount: 100,
       type: OperationType.DEPOSIT,
     });
 
     const statementOperation = await getStatementOperationUseCase.execute({
-      user_id: user?.id!,
-      statement_id: statement.id!,
+      user_id: user.id as string,
+      statement_id: statement.id as string,
     });
 
     expect(statementOperation).toHaveProperty("id");
@@ -65,12 +60,10 @@ describe("Get Statement Operation", () => {
         password: "test",
       };
 
-      await createUserUseCase.execute(userData);
-
-      const user = await inMemoryUsersRepository.findByEmail(userData.email);
+      const user = await inMemoryUsersRepository.create(userData);
 
       await getStatementOperationUseCase.execute({
-        user_id: user?.id!,
+        user_id: user.id as string,
         statement_id: "nonexistent_statement_id",
       });
     }).rejects.toBeInstanceOf(GetStatementOperationError.StatementNotFound);

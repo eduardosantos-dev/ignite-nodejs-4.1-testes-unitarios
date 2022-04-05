@@ -1,6 +1,5 @@
 import { InMemoryUsersRepository } from "../../repositories/in-memory/InMemoryUsersRepository";
 import { AuthenticateUserUseCase } from "../authenticateUser/AuthenticateUserUseCase";
-import { CreateUserUseCase } from "../createUser/CreateUserUseCase";
 import { ICreateUserDTO } from "../createUser/ICreateUserDTO";
 import { ShowUserProfileError } from "./ShowUserProfileError";
 import { ShowUserProfileUseCase } from "./ShowUserProfileUseCase";
@@ -8,7 +7,6 @@ import { ShowUserProfileUseCase } from "./ShowUserProfileUseCase";
 describe("Show user profile", () => {
   let showUserProfileUseCase: ShowUserProfileUseCase;
   let authenticateUserUseCase: AuthenticateUserUseCase;
-  let createUserUseCase: CreateUserUseCase;
   let inMemoryUsersRepository: InMemoryUsersRepository;
 
   beforeEach(() => {
@@ -19,7 +17,6 @@ describe("Show user profile", () => {
     authenticateUserUseCase = new AuthenticateUserUseCase(
       inMemoryUsersRepository
     );
-    createUserUseCase = new CreateUserUseCase(inMemoryUsersRepository);
   });
 
   it("should be able to show an user's profile", async () => {
@@ -29,11 +26,9 @@ describe("Show user profile", () => {
       password: "test",
     };
 
-    await createUserUseCase.execute(userData);
+    const user = await inMemoryUsersRepository.create(userData);
 
-    const user = await inMemoryUsersRepository.findByEmail(userData.email);
-
-    const userProfile = await showUserProfileUseCase.execute(user?.id!);
+    const userProfile = await showUserProfileUseCase.execute(user.id as string);
 
     expect(userProfile).toHaveProperty("id");
     expect(userProfile).toHaveProperty("name");
