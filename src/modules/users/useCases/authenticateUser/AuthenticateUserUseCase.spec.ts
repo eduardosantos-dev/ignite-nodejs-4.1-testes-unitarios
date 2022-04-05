@@ -45,15 +45,15 @@ describe("Authenticate an User", () => {
   });
 
   it("should not be able authenticate user with wrong password", async () => {
-    const user: ICreateUserDTO = {
-      name: "test user",
-      email: "test@example.com",
-      password: "test",
-    };
-
-    await createUserUseCase.execute(user);
-
     expect(async () => {
+      const user: ICreateUserDTO = {
+        name: "test user",
+        email: "test@example.com",
+        password: "test",
+      };
+
+      await createUserUseCase.execute(user);
+
       await authenticateUserUseCase.execute({
         email: user.email,
         password: "incorrect_password",
