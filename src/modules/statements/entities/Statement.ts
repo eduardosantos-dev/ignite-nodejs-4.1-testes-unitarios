@@ -23,6 +23,13 @@ export class Statement {
   @JoinColumn({ name: "user_id" })
   user: User;
 
+  @Column("uuid")
+  sender_id?: string;
+
+  @ManyToOne(() => User, (user) => user.statement)
+  @JoinColumn({ name: "sender_id" })
+  sender_user: User;
+
   @Column()
   description: string;
 
